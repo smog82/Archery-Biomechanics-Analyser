@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Temp / outputs
+*.tmp
+*_annotated.mp4
+*.log
+
+# Keep demo profiles but ignore user-generated ones (optional)
+# data/profiles/*.json
