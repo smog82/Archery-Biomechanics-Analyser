@@ -1,243 +1,285 @@
-# 🏹 Archery Biomechanics Analyser
+Archery Biomechanics Analyser
 
-**Computer-vision platform for biomechanical analysis of the archery shot — developed for and validated with the Madrid Archery Team.**
+<div align="center">
 
-A two-plane (sagittal + zenithal) video analysis system that extracts frame-by-frame kinematic metrics of the draw and release, segments individual shots, scores technique consistency, and produces coach-ready Excel and PDF reports. Built on MediaPipe Pose, OpenCV and Streamlit.
+![Python](https://img.shields.io/badge/Python-3.10+-blue?style=for-the-badge&logo=python)
+![Streamlit](https://img.shields.io/badge/Streamlit-1.35+-FF4B4B?style=for-the-badge&logo=streamlit)
+![MediaPipe](https://img.shields.io/badge/MediaPipe-Pose-00A67E?style=for-the-badge&logo=google)
+![OpenCV](https://img.shields.io/badge/OpenCV-4.9+-5C3EE8?style=for-the-badge&logo=opencv)
+![Plotly](https://img.shields.io/badge/Plotly-5.22+-3F4F75?style=for-the-badge&logo=plotly)
+![License](https://img.shields.io/badge/License-MIT-purple?style=for-the-badge)
 
----
+**Computer-vision platform for biomechanical analysis of the archery shot**
 
-## Table of Contents
+*Biomedical Engineering Portfolio · Alonso Martín Díez · Universidad Europea de Madrid 2026*
 
-- [Overview](#overview)
-- [Key Features](#key-features)
-- [Biomechanical Metrics](#biomechanical-metrics)
-- [Architecture](#architecture)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Module Guide](#module-guide)
-- [Calibration](#calibration)
-- [Data & Privacy](#data--privacy)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Roadmap](#roadmap)
-- [License](#license)
+</div>
 
 ---
 
-## Overview
+## 📋 Overview
 
-In recurve and compound archery, accuracy is decided in the final hundreds of milliseconds before release. Micro-adjustments of the wrist, forearm and draw elbow at full draw have an outsized effect on where the arrow lands. This project quantifies those movements from ordinary action-camera footage — no motion-capture suit, no physical markers — by running markerless pose estimation on two synchronised camera planes:
+Complete **markerless dual-plane biomechanical analysis system** for the archery shot. Two synchronised camera views (sagittal + zenithal) are processed through MediaPipe Pose to extract frame-by-frame kinematic metrics, classify shot phases, score technique consistency, and produce coach-ready reports — no motion-capture suit, no physical markers required.
 
-- **Sagittal (lateral) plane** — captures the draw arm, elbow flexion, wrist alignment and bow-arm cant.
-- **Top / zenithal plane** — captures shoulder-line rotation and alignment from above.
+Developed for and validated with the **Madrid Archery Team**.
 
-The result is a longitudinal record of each archer's technique that coaches can review, compare across sessions, and benchmark across the team.
+### Platform at a Glance
 
----
-
-## Key Features
-
-- **Dual-plane video analysis** with automatic temporal synchronisation between the two cameras (motion-energy cross-correlation, no audio track required).
-- **Markerless pose estimation** using MediaPipe Pose (model complexity 2) with temporal smoothing and a Holistic fallback for the harder zenithal viewpoint.
-- **Eight biomechanical metrics** computed per frame, each with a biomechanically grounded reference range.
-- **Shot phase detection** — every frame is classified as `pre_draw`, `draw`, `full_draw`, `release` or `follow_through`, with per-phase timing. Supports multi-shot videos via an automatic re-arm mechanism.
-- **Automatic shot segmentation** — detects individual shot cycles inside a longer clip.
-- **Consistency Index (CI)** — a 0–100 score quantifying how repeatable an archer's movement pattern is across shots and sessions.
-- **Real-time live camera mode** — webcam, USB action cam or RTSP stream, with optional dual-camera capture.
-- **Pixel calibration** — ArUco-marker auto-detection or manual reference, converting normalised coordinates into real-world millimetres.
-- **Per-archer profiles** — persistent session history, progression charts and metadata, stored as local JSON.
-- **Coach Dashboard** — team-wide consistency ranking, metric heatmap and distribution plots.
-- **Radar / spider charts** — instant visual technique fingerprint, single-archer evolution or multi-archer comparison.
-- **Professional exports** — formatted multi-sheet Excel workbook, multi-page PDF report, annotated MP4 video, and raw CSV.
+| Capability | Detail |
+|:-----------|:-------|
+| 🎯 **8 biomechanical metrics** | Per-frame angles with reference ranges |
+| 📹 **Dual-plane analysis** | Synchronised sagittal + top-view processing |
+| 🤖 **Markerless pose** | MediaPipe Pose (complexity 2) + Holistic fallback |
+| ⏱️ **5-phase shot detection** | pre_draw → draw → full_draw → release → follow_through |
+| 🔄 **Multi-shot support** | Automatic re-arm for videos with multiple shots |
+| 📊 **Consistency Index** | 0–100 repeatability score across shots/sessions |
+| 📷 **Live camera mode** | Webcam / action cam / RTSP, single or dual |
+| 📏 **Pixel calibration** | ArUco marker auto-detection or manual reference |
+| 👤 **Archer profiles** | Persistent session history + progression tracking |
+| 📄 **Professional exports** | Excel, PDF report, annotated MP4, CSV |
 
 ---
 
-## Biomechanical Metrics
+## 🏹 Biomechanical Metrics
+
+Eight metrics are computed per frame from the MediaPipe 33-landmark skeleton:
+
+```
+Sagittal plane (lateral view)          Top plane (zenithal view)
+──────────────────────────────         ──────────────────────────
+Arm–Trunk Angle    60°–130°            Shoulder Tilt      0°–15°
+Elbow Angle       100°–170°
+Wrist Angle       140°–180°
+DFL Angle           0°–30°
+Elbow–Wrist Vert.   0°–45°
+Bow Cant Angle      0°–20°
+Stability (σ)     lower = better
+```
 
 | Metric | Plane | Normal Range | What it measures |
-|--------|-------|-------------|------------------|
+|:-------|:------|:-------------|:-----------------|
 | Arm–Trunk Angle | Sagittal | 60° – 130° | Draw-arm elevation relative to the torso |
 | Elbow Angle | Sagittal | 100° – 170° | Draw-arm flexion at full draw |
 | Wrist Angle | Sagittal | 140° – 180° | Wrist alignment — deviation risks accuracy |
 | DFL Angle | Sagittal | 0° – 30° | Draw Force Line quality (bow-arm alignment) |
 | Elbow–Wrist Vertical | Sagittal | 0° – 45° | Bow-forearm cant at release |
 | Bow Cant Angle | Sagittal | 0° – 20° | Bow tilt relative to vertical |
-| Shoulder Tilt | Top | 0° – 15° | Shoulder-line rotation from the zenith view |
+| Shoulder Tilt | Top | 0° – 15° | Shoulder-line rotation from zenith view |
 | Stability (rolling σ) | Sagittal | Lower is better | Steadiness of the hold at full draw |
 
-Two derived kinematic signals are also produced: **angular velocity** (°/s) for the elbow and arm–trunk angles, and **shoulder sway** (micro-movement dispersion during full draw).
+**Derived kinematics:** Angular velocity (°/s) for elbow and arm–trunk, and shoulder sway (micro-movement dispersion during the hold).
 
-> ⚠️ Reference ranges are practical guidance distilled from coaching literature and team data, not clinical thresholds. "Outside range" flags a movement worth a coach's attention — it is not a diagnosis.
+> ⚠️ Reference ranges are coaching guidance, not clinical thresholds. "Out of range" flags a movement worth attention — not a diagnosis.
 
 ---
 
-## Architecture
+## ⏱️ Shot Phase Detection
+
+Each frame is classified from elbow-angle dynamics into five phases with per-phase timing:
 
 ```
-                 ┌─────────────────┐   ┌─────────────────┐
-   Sagittal ───► │  PoseEstimator  │   │  PoseEstimator  │ ◄─── Top view
-     video       │    Sagittal     │   │      Top        │      video
-                 └────────┬────────┘   └────────┬────────┘
-                          │                     │
-                          ▼                     ▼
-                 ┌──────────────────────────────────────┐
-                 │            Synchroniser               │
-                 │  (motion-energy cross-correlation)    │
-                 └────────────────┬─────────────────────┘
+┌──────────┐    ┌──────┐    ┌───────────┐    ┌─────────┐    ┌────────────────┐
+│ PRE_DRAW │ →  │ DRAW │ →  │ FULL_DRAW │ →  │ RELEASE │ →  │ FOLLOW_THROUGH │
+│ arm ext. │    │ bend │    │  stable   │    │ sudden  │    │   post-release │
+│  >160°   │    │ 90-160°│   │  σ < 3°  │    │ Δ>15°/3f│    │   re-arm →     │
+└──────────┘    └──────┘    └───────────┘    └─────────┘    └────────────────┘
+                                                                     ↓
+                                                            back to PRE_DRAW
+                                                          (multi-shot support)
+```
+
+---
+
+## 🏗️ Architecture
+
+```
+                 ┌─────────────────────┐   ┌─────────────────────┐
+  Sagittal ────► │ PoseEstimatorSag.   │   │ PoseEstimatorTop    │ ◄──── Top view
+    video        │ MediaPipe c2 + avg  │   │ Pose + Holistic EMA │       video
+                 └─────────┬───────────┘   └─────────┬───────────┘
+                           │                         │
+                           ▼                         ▼
+                 ┌─────────────────────────────────────────────┐
+                 │              Synchroniser                    │
+                 │   motion-energy normalised cross-correlation │
+                 └──────────────────┬──────────────────────────┘
+                                    ▼
+          ┌──────────────┬──────────────────┬──────────────────┐
+          ▼              ▼                  ▼                  ▼
+    ┌───────────┐  ┌────────────┐  ┌──────────────┐  ┌──────────────┐
+    │ 8 Angle   │  │ Kinematics │  │ Phase detect │  │    Shot      │
+    │ metrics   │  │ vel · sway │  │ + timing     │  │ segmentation │
+    └─────┬─────┘  └─────┬──────┘  └──────┬───────┘  └──────┬───────┘
+          └──────────────┴────────┬───────┴──────────────────┘
                                   ▼
-        ┌──────────────┬──────────────────┬──────────────────┐
-        ▼              ▼                  ▼                  ▼
-   ┌─────────┐   ┌────────────┐   ┌──────────────┐   ┌──────────────┐
-   │ Angles  │   │ Kinematics │   │ Phase detect │   │ Shot segment │
-   │ metrics │   │ vel / sway │   │ + timing     │   │              │
-   └────┬────┘   └─────┬──────┘   └──────┬───────┘   └──────┬───────┘
-        └──────────────┴────────┬────────┴──────────────────┘
-                                ▼
-                  ┌──────────────────────────┐
-                  │  Per-frame results table  │
-                  └────────────┬─────────────┘
-            ┌──────────────────┼──────────────────────┐
-            ▼                  ▼                      ▼
-    ┌──────────────┐   ┌──────────────┐      ┌──────────────────┐
-    │ Excel / PDF  │   │ Profile JSON │      │ Plotly dashboards │
-    │ CSV / video  │   │ persistence  │      │ radar / coach     │
-    └──────────────┘   └──────────────┘      └──────────────────┘
+                   ┌────────────────────────┐
+                   │  Per-frame DataFrame   │
+                   └───────────┬────────────┘
+             ┌─────────────────┼──────────────────────┐
+             ▼                 ▼                      ▼
+     ┌──────────────┐  ┌──────────────┐     ┌──────────────────┐
+     │ Excel · PDF  │  │ Profile JSON │     │ Plotly dashboards │
+     │ CSV · MP4    │  │ persistence  │     │ radar · coach     │
+     └──────────────┘  └──────────────┘     └──────────────────┘
 ```
 
 ---
 
-## Installation
-
-**Requirements:** Python 3.10 or newer.
-
-```bash
-# 1. Clone the repository
-git clone https://github.com/<your-username>/archery-biomechanics-analyser.git
-cd archery-biomechanics-analyser
-
-# 2. (Recommended) create a virtual environment
-python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-
-# 3. Install dependencies
-pip install -r requirements.txt
-
-# 4. Launch the app
-streamlit run app/main_app.py
-```
-
-The app opens in your browser at `http://localhost:8501`.
-
-> **MediaPipe note:** on first launch MediaPipe downloads its pose model (~30 MB). This requires an internet connection once; afterwards it runs fully offline.
-
----
-
-## Usage
-
-A typical analysis flow:
-
-1. **(Optional) Calibrate** — open the *Calibration* page and set the pixel-to-mm scale with an ArUco marker or a known reference object. Required only if you want distances in real-world millimetres.
-2. **Upload & Analyse** — drop in a paired sagittal and top-view clip, choose which metrics to compute, and run the analysis. Watch the live preview, then download the Excel/PDF/CSV report.
-3. **Save the profile** — enter an archer name before running and the session is appended to that archer's history automatically.
-4. **Review analytics** — use *Shot Comparison*, *Radar Charts* and the *Coach Dashboard* to track progress and benchmark against the team.
-
----
-
-## Module Guide
-
-| Page | Purpose |
-|------|---------|
-| **Home** | Platform overview, metric reference and getting-started guide |
-| **Calibration** | Establish the pixel-to-mm scale (ArUco or manual) |
-| **Upload & Analyse** | Core engine: dual-video upload, metric extraction, phase detection, exports |
-| **Live Camera** | Real-time pose estimation from webcam / action cam / RTSP, single or dual camera |
-| **Archer Profiles** | Create profiles, browse session history, view progression charts |
-| **Shot Comparison** | Overlay normalised kinematic curves across sessions, with Consistency Index |
-| **Radar Charts** | Spider-chart technique fingerprint — single-archer evolution or multi-archer |
-| **Coach Dashboard** | Team-level consistency ranking, metric heatmap and distribution plots |
-
----
-
-## Calibration
-
-Real-world distance measurements require a known scale. Two methods are supported:
-
-**ArUco marker (recommended).** Print any `DICT_4X4_50` marker, measure its printed black-square side in millimetres, place it flat in the camera's field of view, and upload the clip. The first 90 frames are scanned and the median pixel-per-mm scale is applied.
-
-**Manual reference.** Measure a known object in a frame (an arrow ≈ 620–710 mm, a recurve riser ≈ 380 mm) in pixels, enter both pixel and real lengths, and the scale is computed directly.
-
-Without calibration, distances are reported in MediaPipe's normalised 0–1 coordinates; all angle metrics work regardless of calibration.
-
----
-
-## Data & Privacy
-
-- All data stays **local**. Archer profiles are plain JSON files under `data/profiles/`. Nothing is uploaded anywhere.
-- Uploaded videos are written to temporary files only for the duration of processing and deleted immediately afterwards.
-- Pose estimation extracts joint coordinates only; raw video frames are never persisted unless you explicitly export an annotated video.
-
-The repository ships with four demonstration profiles (`Ana_Garcia`, `Carlos_Lopez`, `Miguel_Torres`, `Test_Archer`) containing synthetic session data so the analytics pages are populated out of the box.
-
----
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| UI framework | Streamlit |
-| Pose estimation | MediaPipe Pose (complexity 2) + Holistic fallback |
-| Computer vision | OpenCV (incl. ArUco) |
-| Numerics | NumPy, pandas |
-| Visualisation | Plotly |
-| Excel export | openpyxl |
-| PDF export | ReportLab + Matplotlib |
-
----
-
-## Project Structure
+## 📁 Repository Structure
 
 ```
 archery-biomechanics-analyser/
-├── app/
-│   ├── main_app.py              # Home page / entry point
-│   ├── _theme.py                # Centralised CSS theme & UI helpers
+│
+├── 🖥️ app/
+│   ├── main_app.py                    ← Home page / entry point
+│   ├── _theme.py                      ← Centralised CSS theme & UI helpers
 │   └── pages/
-│       ├── 0_calibration.py     # Pixel-to-mm calibration
-│       ├── 1_upload.py          # Core dual-video analysis engine
-│       ├── 2_live_camera.py     # Real-time camera analysis
-│       ├── 3_profiles.py        # Archer profile management
-│       ├── 4_comparison.py      # Shot / session comparison
-│       ├── 5_radar.py           # Radar technique fingerprints
-│       └── 6_coach_dashboard.py # Team-level analytics
-├── src/
-│   ├── pose/                    # Sagittal & top-view pose estimators
-│   ├── metrics/                 # Angles, kinematics, stability, consistency,
-│   │                            #   shot-phase detection
-│   ├── detection/               # Multi-shot segmentation
-│   ├── sync/                    # Two-camera temporal synchronisation
-│   ├── calibration/             # ArUco / manual pixel calibration
-│   └── export/                  # Excel, PDF, annotated-video, profile JSON
-├── data/profiles/               # Persistent archer profiles (JSON)
-├── requirements.txt
-├── LICENSE
-└── README.md
+│       ├── 0_calibration.py           ← ArUco / manual pixel-to-mm calibration
+│       ├── 1_upload.py                ← Core dual-video analysis engine
+│       ├── 2_live_camera.py           ← Real-time webcam / RTSP analysis
+│       ├── 3_profiles.py              ← Archer profile management
+│       ├── 4_comparison.py            ← Shot / session kinematic overlay
+│       ├── 5_radar.py                 ← Spider chart technique fingerprints
+│       └── 6_coach_dashboard.py       ← Team-level analytics
+│
+├── 🔬 src/
+│   ├── pose/
+│   │   ├── sagittal.py                ← Sagittal pose estimator (c2 + moving avg)
+│   │   └── top.py                     ← Top pose estimator (Pose + Holistic + EMA)
+│   ├── metrics/
+│   │   ├── angles.py                  ← 8 angle metrics + auto-detect side
+│   │   ├── kinematics.py              ← Angular velocity + shoulder sway
+│   │   ├── stability.py               ← Rolling σ stability tracker
+│   │   ├── consistency.py             ← Consistency Index (0–100)
+│   │   └── shot_phase_detector.py     ← 5-phase classification + re-arm
+│   ├── detection/
+│   │   └── shot_segmenter.py          ← Multi-shot cycle detection
+│   ├── sync/
+│   │   └── synchroniser.py            ← Cross-correlation temporal sync
+│   ├── calibration/
+│   │   └── aruco_calibrator.py        ← ArUco + manual scale
+│   └── export/
+│       ├── excel_exporter.py          ← Multi-sheet formatted workbook
+│       ├── pdf_exporter.py            ← 3-page PDF report (ReportLab)
+│       ├── video_exporter.py          ← Annotated MP4 with HUD overlay
+│       └── profile_manager.py         ← JSON profile persistence
+│
+├── 📊 data/profiles/                  ← Persistent archer profiles (JSON)
+│   ├── Ana_Garcia.json                ← Demo profile (3 sessions)
+│   ├── Carlos_Lopez.json              ← Demo profile (3 sessions)
+│   ├── Miguel_Torres.json             ← Demo profile (2 sessions)
+│   └── Test_Archer.json               ← Demo profile (1 session)
+│
+├── 📄 docs/
+│   └── Technical_Documentation.docx   ← Full 9-page technical docs
+│
+├── 🔧 requirements.txt
+├── 📝 README.md
+└── ⚖️ LICENSE (MIT)
 ```
 
 ---
 
-## Roadmap
+## ⚙️ Installation & Setup
 
-- Audio-spike synchronisation as an alternative to motion-energy alignment
-- Per-shot (rather than per-session) consistency scoring inside a single clip
-- Configurable, archer-specific reference ranges
-- Release-timing analysis correlating wrist micro-movement with arrow grouping
+### 1. Clone the repository
+```bash
+git clone https://github.com/alonsomartindiez/archery-biomechanics-analyser.git
+cd archery-biomechanics-analyser
+```
+
+### 2. Create a virtual environment (recommended)
+```bash
+python -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+```
+
+### 3. Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Launch the app
+```bash
+streamlit run app/main_app.py
+```
+
+Opens at `http://localhost:8501`.
+
+> 💡 On first launch, MediaPipe downloads its pose model (~30 MB). Requires internet once; runs fully offline afterwards.
 
 ---
 
-## License
+## 🎯 Usage Workflow
 
-Released under the [MIT License](LICENSE).
+| Step | Page | Action |
+|:-----|:-----|:-------|
+| **01** | Calibration | Set pixel-to-mm scale (ArUco or manual reference) — optional |
+| **02** | Upload & Analyse | Drop sagittal + top-view videos, select metrics, run analysis |
+| **03** | Upload & Analyse | Download Excel / PDF / CSV report, optionally export annotated video |
+| **04** | Archer Profiles | Session auto-saved to archer's profile (enter name before running) |
+| **05** | Shot Comparison | Overlay normalised kinematic curves across sessions |
+| **06** | Radar Charts | Spider chart technique fingerprint — single or multi-archer |
+| **07** | Coach Dashboard | Team-wide consistency ranking, heatmap, distributions |
 
 ---
 
-*Developed by Alonso Martín Díez · Biomedical Engineering, Universidad Europea de Madrid · in collaboration with the Madrid Archery Team.*
+## 📏 Calibration
+
+| Method | How it works | When to use |
+|:-------|:-------------|:------------|
+| **ArUco marker** (recommended) | Print DICT_4X4_50 marker, place in camera view, auto-detected in first 90 frames | Precise, reproducible measurements |
+| **Manual reference** | Measure a known object in the frame (arrow ≈ 700 mm, riser ≈ 380 mm) | Quick setup, no marker needed |
+
+Without calibration, distances are in normalised coordinates (0–1). All angle metrics work regardless.
+
+---
+
+## 🔧 Tech Stack
+
+| Layer | Technology |
+|:------|:-----------|
+| UI framework | Streamlit |
+| Pose estimation | MediaPipe Pose (complexity 2) + Holistic fallback |
+| Computer vision | OpenCV (incl. ArUco module) |
+| Numerics | NumPy · pandas |
+| Visualisation | Plotly |
+| Excel export | openpyxl |
+| PDF export | ReportLab + Matplotlib |
+| Video export | OpenCV VideoWriter (mp4v codec) |
+
+---
+
+## 🔒 Data & Privacy
+
+- **All data stays local** — profiles are plain JSON under `data/profiles/`, nothing is uploaded externally
+- **Videos are ephemeral** — written to temp files only during processing, deleted immediately after
+- **No raw frames stored** — pose estimation extracts joint coordinates only; frames are never persisted unless you explicitly export an annotated video
+- **4 synthetic demo profiles** ship with the repository so analytics pages work out of the box
+
+---
+
+## 🗺️ Roadmap
+
+- [ ] Audio-spike synchronisation as an alternative to motion-energy alignment
+- [ ] Per-shot (within a single clip) consistency scoring
+- [ ] Configurable, archer-specific reference ranges
+- [ ] Release-timing analysis correlating wrist micro-movement with arrow grouping
+- [ ] 3D pose estimation with depth cameras
+
+---
+
+## 📚 References
+
+1. Landers, D.M. et al. (1994). *Biomechanical analysis of archery performance*. Olympic Scientific Congress.
+2. Ertan, H. et al. (2003). *Activation patterns in forearm muscles during archery shooting*. Human Movement Science, 22(1), 37-45.
+3. Soylu, A.R. et al. (2006). *Archery performance level and repeatability of event-related EMG*. Human Movement Science, 25(6), 767-774.
+4. Lugaresi, C. et al. (2019). *MediaPipe: A Framework for Building Perception Pipelines*. arXiv:1906.08172.
+
+---
+
+## 👤 Author
+
+**Alonso Martín Díez** · Biomedical Engineering · Universidad Europea de Madrid · 2026
+
+In collaboration with the **Madrid Archery Team**.
