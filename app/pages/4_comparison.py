@@ -122,7 +122,7 @@ fig.update_layout(
 )
 fig.update_xaxes(gridcolor="#2E6B4F")
 fig.update_yaxes(gridcolor="#2E6B4F")
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 
 # ── Consistency Index ─────────────────────────────────────────────────────────
 if show_ci and len(all_series) > 1:
@@ -151,7 +151,7 @@ if show_ci and len(all_series) > 1:
              "Min (°)": y.min().round(2), "Max (°)": y.max().round(2)}
             for lbl, (_, y) in zip(labels, all_series)
         ])
-        st.dataframe(per_session, use_container_width=True, hide_index=True)
+        st.dataframe(per_session, width="stretch", hide_index=True)
 
 # ── Phase analysis: pre-release window ───────────────────────────────────────
 st.divider()
@@ -173,4 +173,4 @@ fig2.update_layout(
     yaxis_title="Angle (°)"
 )
 fig2.update_xaxes(gridcolor="#2E6B4F"); fig2.update_yaxes(gridcolor="#2E6B4F")
-st.plotly_chart(fig2, use_container_width=True)
+st.plotly_chart(fig2, width="stretch")

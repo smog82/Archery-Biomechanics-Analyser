@@ -116,7 +116,7 @@ if not ranked.empty:
         xaxis=dict(title="Archer"),
         margin=dict(t=20, b=20)
     )
-    st.plotly_chart(fig_ci, use_container_width=True)
+    st.plotly_chart(fig_ci, width="stretch")
 
 st.divider()
 
@@ -145,7 +145,7 @@ if show_heatmap:
             height=max(300, len(team_rows) * 60),
             margin=dict(t=20, b=20, l=120)
         )
-        st.plotly_chart(fig_heat, use_container_width=True)
+        st.plotly_chart(fig_heat, width="stretch")
 
 st.divider()
 
@@ -167,10 +167,10 @@ if angle_mean_cols and len(team_df) > 1:
         font_color="#E8F5E9", height=380,
         yaxis=dict(title="Mean angle (°)", gridcolor="#2E6B4F")
     )
-    st.plotly_chart(fig_box, use_container_width=True)
+    st.plotly_chart(fig_box, width="stretch")
 
 # ── Full table ────────────────────────────────────────────────────────────────
 with st.expander("📋 Full team data table"):
     display_cols = ["Archer", "Sessions", "CI"] + angle_mean_cols
     display_cols = [c for c in display_cols if c in team_df.columns]
-    st.dataframe(team_df[display_cols].round(2), use_container_width=True, hide_index=True)
+    st.dataframe(team_df[display_cols].round(2), width="stretch", hide_index=True)

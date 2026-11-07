@@ -110,7 +110,7 @@ if selected != "— Select —":
                 )
                 fig.update_xaxes(title="Session", gridcolor="#2E6B4F")
                 fig.update_yaxes(title="Mean angle (°)", gridcolor="#2E6B4F")
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width="stretch")
 
             # Stability trend
             if "Stability_Arm_Trunk" in prog_df.columns:
@@ -126,7 +126,7 @@ if selected != "— Select —":
                 )
                 fig2.update_xaxes(gridcolor="#2E6B4F")
                 fig2.update_yaxes(title="Std dev (°)", gridcolor="#2E6B4F")
-                st.plotly_chart(fig2, use_container_width=True)
+                st.plotly_chart(fig2, width="stretch")
         else:
             st.info("No session data with metrics yet for this archer.")
 
@@ -140,7 +140,7 @@ if selected != "— Select —":
         s_data = sessions[s_idx].get("data", {})
         if s_data:
             df_s = pd.DataFrame(s_data)
-            st.dataframe(df_s.describe().round(2), use_container_width=True)
+            st.dataframe(df_s.describe().round(2), width="stretch")
             angle_c = [c for c in df_s.columns if "Angle" in c or "DFL" in c]
             if angle_c:
                 fig3 = go.Figure()
@@ -152,4 +152,4 @@ if selected != "— Select —":
                                    font_color="#E8F5E9", height=320)
                 fig3.update_xaxes(title="Frame", gridcolor="#2E6B4F")
                 fig3.update_yaxes(title="Angle (°)", gridcolor="#2E6B4F")
-                st.plotly_chart(fig3, use_container_width=True)
+                st.plotly_chart(fig3, width="stretch")

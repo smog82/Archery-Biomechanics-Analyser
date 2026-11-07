@@ -353,7 +353,7 @@ if sag_file and top_file:
                     top_rgb = cv2.cvtColor(cv2.resize(frame_top, (480, 270)), cv2.COLOR_BGR2RGB)
                     frame_ph.image(np.hstack([sag_rgb, top_rgb]),
                                    caption="Sagittal (colour-coded) | Top view",
-                                   use_container_width=True)
+                                   width="stretch")
 
                     if len(results_data) > 5:
                         df_live = pd.DataFrame(results_data)
@@ -372,7 +372,7 @@ if sag_file and top_file:
                                           font_color="#E8F5E9", height=350, margin=dict(t=40, b=20))
                         fig.update_xaxes(gridcolor="#2E6B4F")
                         fig.update_yaxes(gridcolor="#2E6B4F")
-                        chart_ph.plotly_chart(fig, use_container_width=True)
+                        chart_ph.plotly_chart(fig, width="stretch")
 
                 progress.progress(min(f_idx / max(total, 1), 1.0))
                 status.caption(f"Frame {f_idx} / {total}")
@@ -501,7 +501,7 @@ if sag_file and top_file:
                            legend=dict(bgcolor="#1B3A2D", bordercolor="#2E6B4F"))
         fig2.update_xaxes(title="Frame", gridcolor="#2E6B4F")
         fig2.update_yaxes(title="Angle (°)", gridcolor="#2E6B4F")
-        st.plotly_chart(fig2, use_container_width=True)
+        st.plotly_chart(fig2, width="stretch")
 
         # Angular velocity chart
         vel_cols = [c for c in df.columns if "Vel_" in c and df[c].dropna().count() > 3]
@@ -518,7 +518,7 @@ if sag_file and top_file:
                                   legend=dict(bgcolor="#1B3A2D", bordercolor="#2E6B4F"))
             fig_vel.update_xaxes(title="Frame", gridcolor="#2E6B4F")
             fig_vel.update_yaxes(title="°/s", gridcolor="#2E6B4F")
-            st.plotly_chart(fig_vel, use_container_width=True)
+            st.plotly_chart(fig_vel, width="stretch")
 
         # Distributions
         if angle_cols:
@@ -534,11 +534,11 @@ if sag_file and top_file:
                     fig3.add_vline(x=hi, line_dash="dash", line_color="#4CAF50", row=1, col=i+1)
             fig3.update_layout(paper_bgcolor="#0D1F16", plot_bgcolor="#1B3A2D",
                                font_color="#E8F5E9", height=300, showlegend=False)
-            st.plotly_chart(fig3, use_container_width=True)
+            st.plotly_chart(fig3, width="stretch")
 
         with st.expander("🔢 Raw data table"):
             display_df = df.drop(columns=["Shot_Phase", "_landmarks"], errors="ignore")
-            st.dataframe(display_df.style.background_gradient(cmap="Greens"), use_container_width=True)
+            st.dataframe(display_df.style.background_gradient(cmap="Greens"), width="stretch")
 
         # ── Export ─────────────────────────────────────────────────────────────
         st.markdown("---")

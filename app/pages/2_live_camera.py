@@ -278,7 +278,7 @@ if st.session_state.live_running:
 
     # Display cam1
     rgb1 = cv2.cvtColor(cv2.resize(frame1_ann, (480, 270)), cv2.COLOR_BGR2RGB)
-    frame1_ph.image(rgb1, use_container_width=True)
+    frame1_ph.image(rgb1, width="stretch")
     metric1_ph.markdown(_metrics_html(m1), unsafe_allow_html=True)
 
     # ── Camera 2 (if enabled) ─────────────────────────────────────────────────
@@ -316,7 +316,7 @@ if st.session_state.live_running:
             # Display cam2
             rgb2 = cv2.cvtColor(cv2.resize(frame2_ann, (480, 270)), cv2.COLOR_BGR2RGB)
             if frame2_ph:
-                frame2_ph.image(rgb2, use_container_width=True)
+                frame2_ph.image(rgb2, width="stretch")
             if metric2_ph:
                 metric2_ph.markdown(_metrics_html(m2), unsafe_allow_html=True)
 
@@ -369,7 +369,7 @@ if st.session_state.live_running:
         )
         fig.update_xaxes(title="Frame", gridcolor="#162030")
         fig.update_yaxes(title="Angle (°)", gridcolor="#162030")
-        chart_ph.plotly_chart(fig, use_container_width=True)
+        chart_ph.plotly_chart(fig, width="stretch")
 
     time.sleep(0.033)   # ~30 fps throttle
     st.rerun()          # next frame — Stop button evaluated on next run
@@ -383,18 +383,18 @@ else:
         if cam2_enabled and st.session_state.live2_data:
             tab1, tab2 = st.tabs(["Camera 1 Data", "Camera 2 Data"])
             with tab1:
-                st.dataframe(df1.tail(30), use_container_width=True)
+                st.dataframe(df1.tail(30), width="stretch")
                 csv1 = df1.to_csv(index=False).encode()
                 st.download_button("Download Camera 1 CSV", csv1,
                                    "live_cam1.csv", "text/csv")
             with tab2:
                 df2 = pd.DataFrame(st.session_state.live2_data)
-                st.dataframe(df2.tail(30), use_container_width=True)
+                st.dataframe(df2.tail(30), width="stretch")
                 csv2 = df2.to_csv(index=False).encode()
                 st.download_button("Download Camera 2 CSV", csv2,
                                    "live_cam2.csv", "text/csv")
         else:
-            session_ph.dataframe(df1.tail(20), use_container_width=True)
+            session_ph.dataframe(df1.tail(20), width="stretch")
             csv = df1.to_csv(index=False).encode()
             st.download_button("Download Session CSV", csv,
                                "live_session.csv", "text/csv")

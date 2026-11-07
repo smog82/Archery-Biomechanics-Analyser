@@ -117,7 +117,7 @@ if mode == "Single archer — sessions over time":
         height=520,
         legend=dict(bgcolor="#1B3A2D", bordercolor="#2E6B4F")
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     st.caption("Each axis is normalised 0–100 within the biomechanically expected range. "
                "Outer = higher value, not necessarily better — interpretation depends on the metric.")
@@ -152,7 +152,7 @@ if mode == "Single archer — sessions over time":
                 legend=dict(bgcolor="#1B3A2D", bordercolor="#2E6B4F")
             )
             fig2.update_xaxes(gridcolor="#2E6B4F"); fig2.update_yaxes(gridcolor="#2E6B4F")
-            st.plotly_chart(fig2, use_container_width=True)
+            st.plotly_chart(fig2, width="stretch")
 
 # ── Mode B: multi-archer comparison ──────────────────────────────────────────
 else:
@@ -186,7 +186,7 @@ else:
         height=550,
         legend=dict(bgcolor="#1B3A2D", bordercolor="#2E6B4F")
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     # Comparison table
     st.divider()
@@ -206,4 +206,4 @@ else:
                 row[f"{label} (std °)"]  = round(combined[col].std(), 2)
         rows.append(row)
     if rows:
-        st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)

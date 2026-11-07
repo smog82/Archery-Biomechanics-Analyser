@@ -1,6 +1,7 @@
 streamlit>=1.35.0
 opencv-python>=4.9.0
-mediapipe>=0.10.14
+mediapipe==0.10.21
+protobuf>=4.25.3,<5
 numpy>=1.26.0
 pandas>=2.2.0
 plotly>=5.22.0

@@ -115,7 +115,7 @@ if "ArUco" in method:
                     rgb = cv2.cvtColor(frame_ann, cv2.COLOR_BGR2RGB)
                     with col_preview:
                         st.image(rgb, caption="First frame — marker detection preview",
-                                 use_container_width=True)
+                                 width="stretch")
 
                 # Full scan
                 px_per_mm = detect_aruco_scale(tmp_path, marker_real_mm=marker_mm)
